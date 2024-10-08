@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" 
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title th:text="#{page.title}">Authentication Page</title>
+        <link rel="stylesheet" th:href="@{/css/output.css}" />
+    </head>
+    <body>
+        <header>
+            <nav class="bg-blue-500 p-4">
+                <div class="container mx-auto flex justify-between items-center">
+                    <div class="text-white text-lg font-bold">Your Company</div>
+                    <ul class="flex space-x-4">
+                        <li><a th:href="@{/books}" class="text-white">Books</a></li>
+                        <li><a th:href="@{/categories}" class="text-white">Categories</a></li>
+                        <li><a th:href="@{/authors}" class="text-white">Authors</a></li>
+                        <li sec:authorize="!isAuthenticated()">
+                            <a th:href="@{/auth/login}" class="text-white">Login</a>
+                        </li>
+                        <li sec:authorize="!isAuthenticated()">
+                            <a th:href="@{/auth/register}" class="text-white">Register</a>
+                        </li>
+                        <li sec:authorize="isAuthenticated()">
+                            <div class="relative">
+                                <!-- Profile icon with SVG -->
+                                <button id="profileMenu" class="text-white" onclick="toggleDropdown()">
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" 
+                                         stroke-width="2" stroke-linecap="round" stroke-linejoin="round" 
+                                         class="w-6 h-6"> <!-- Define size -->
+                                        <path d="M20.24 18.24a9 9 0 1 0-16.48 0"/>
+                                        <circle cx="12" cy="7" r="4"/>
+                                    </svg>
+                                </button>
+                                
+                                <!-- Dropdown content, hidden by default -->
+                                <div id="dropdown" class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg hidden">
+                                    <a th:href="@{/auth/profile}" class="block px-4 py-2 text-gray-800">Profile</a>
+                                    <a th:href="@{/auth/change-password}" class="block px-4 py-2 text-gray-800">Change Password</a>
+                                    <form th:action="@{/logout}" method="post" class="block">
+                                        <button class="w-full text-left px-4 py-2 text-gray-800">Logout</button>
+                                    </form>
+                                </div>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </nav>
+        </header>
+        
+        <!-- Dynamic Content -->
+        <main layout:fragment="content" class="py-10"></main>
+
+        <footer class="bg-gray-800 text-white text-center p-4 mt-10">
+            <p>&copy; 2024 Your Company</p>
+        </footer>
+    </body>
+
+    <script>
+        // Dropdown toggle function
+        function toggleDropdown() {
+            var dropdown = document.getElementById('dropdown');
+            dropdown.classList.toggle('hidden');  // Toggle hidden class
+        }
+    </script>
+</html>
