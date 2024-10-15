@@ -51,3 +51,6 @@ Books and Author Module: Define the Book and Author entities, and create API end
 Borrow and Return System: Design how borrowing transactions will be handled, including notifications for overdue books.
 Cron Job Setup: Use Redis for managing the job queue or schedule with Spring’s @Scheduled annotation.
 Role-Based Access Control: Set up permissions for different user roles like Librarian and Member.
+
+# working on seeder that create admin user
+# add icon to toggle password
