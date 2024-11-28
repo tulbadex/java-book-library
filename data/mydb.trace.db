@@ -1,0 +1,6 @@
+2024-10-28 14:45:56.876292Z jdbc[3]: exception
+org.h2.jdbc.JdbcSQLDataException: Value too long for column "DESCRIPTION CHARACTER VARYING(255)": "U&'Could you survive on your own in the wild, with every one out to make sure yo... (918)"; SQL statement:
+insert into book (author_id,category_id,description,image_url,is_borrowed,isbn,published_date,title,id) values (?,?,?,?,?,?,?,?,?) [22001-224]
+2024-10-28 14:47:37.546843Z jdbc[3]: exception
+org.h2.jdbc.JdbcSQLDataException: Value too long for column "DESCRIPTION CHARACTER VARYING(255)": "U&'Could you survive on your own in the wild, with every one out to make sure yo... (918)"; SQL statement:
+insert into book (author_id,category_id,description,image_url,is_borrowed,isbn,published_date,title,id) values (?,?,?,?,?,?,?,?,?) [22001-224]

@@ -51,6 +51,7 @@ public class ResetPasswordController {
         }
         logger.info("User found for token: {}", userOptional.get());
         model.addAttribute("token", token);
+        model.addAttribute("pageTitle", "Reset Password - Company name");
         return "auth/reset-password"; // Return the reset password form
     }
 
@@ -77,6 +78,7 @@ public class ResetPasswordController {
 
         // Validate password strength
         if (!userService.isPasswordStrong(newPassword)) {
+            model.addAttribute("token", token); // Ensure the token is still available
             model.addAttribute("error", "Password must be at least 8 characters, include a digit, an uppercase letter, a lowercase letter, and a special character.");
             return "auth/reset-password";
         }

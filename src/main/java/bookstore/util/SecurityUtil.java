@@ -9,13 +9,13 @@ import org.springframework.security.web.savedrequest.SavedRequest;
 
 public class SecurityUtil {
 
-    // Method to check if the user is authenticated
+    // Check if the user is authenticated
     public static boolean isAuthenticated() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         return auth != null && auth.isAuthenticated() && !"anonymousUser".equals(auth.getPrincipal());
     }
 
-    // Method to handle redirection for authenticated users
+    // Handle redirection for authenticated users based on saved request or default
     public static String handleAuthenticatedUserRedirect(HttpServletRequest request, HttpServletResponse response, String defaultRedirect) {
         SavedRequest savedRequest = new HttpSessionRequestCache().getRequest(request, response);
         if (savedRequest != null) {

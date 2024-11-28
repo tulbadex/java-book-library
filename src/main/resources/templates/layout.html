@@ -5,7 +5,7 @@
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title th:text="#{page.title}">Authentication Page</title>
+        <title th:text="${pageTitle}">Authentication Page</title>
         <link rel="stylesheet" th:href="@{/css/output.css}" />
     </head>
     <body>
@@ -14,7 +14,7 @@
                 <div class="container mx-auto flex justify-between items-center">
                     <div class="text-white text-lg font-bold">Your Company</div>
                     <ul class="flex space-x-4">
-                        <li><a th:href="@{/books}" class="text-white">Books</a></li>
+                        <li><a th:href="@{/books/list}" class="text-white">Books</a></li>
                         <li><a th:href="@{/categories}" class="text-white">Categories</a></li>
                         <li><a th:href="@{/authors}" class="text-white">Authors</a></li>
                         <li sec:authorize="!isAuthenticated()">
@@ -37,8 +37,8 @@
                                 
                                 <!-- Dropdown content, hidden by default -->
                                 <div id="dropdown" class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg hidden">
-                                    <a th:href="@{/auth/profile}" class="block px-4 py-2 text-gray-800">Profile</a>
-                                    <a th:href="@{/auth/change-password}" class="block px-4 py-2 text-gray-800">Change Password</a>
+                                    <a th:href="@{/user/profile}" class="block px-4 py-2 text-gray-800">Profile</a>
+                                    <a th:href="@{/user/change-password}" class="block px-4 py-2 text-gray-800">Change Password</a>
                                     <form th:action="@{/logout}" method="post" class="block">
                                         <button class="w-full text-left px-4 py-2 text-gray-800">Logout</button>
                                     </form>
@@ -54,7 +54,8 @@
         <main layout:fragment="content" class="py-10"></main>
 
         <footer class="bg-gray-800 text-white text-center p-4 mt-10">
-            <p>&copy; 2024 Your Company</p>
+            <p>&copy; <span id="year"></span> Your Company</p>
+            <!-- <span th:text="${T(java.time.Year).now()}"></span> -->
         </footer>
     </body>
 
@@ -64,5 +65,6 @@
             var dropdown = document.getElementById('dropdown');
             dropdown.classList.toggle('hidden');  // Toggle hidden class
         }
+        document.getElementById("year").textContent = new Date().getFullYear();
     </script>
 </html>

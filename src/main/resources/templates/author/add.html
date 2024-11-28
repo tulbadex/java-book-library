@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout}">
+<head>
+    <title>Add Author</title>
+</head>
+<body>
+    <div layout:fragment="content">
+        <div class="container mx-auto">
+            <h1 class="text-2xl font-bold mb-4">Add New Author</h1>
+    
+            <form th:action="@{/authors/add}" method="post" enctype="multipart/form-data">
+                <label>Name</label>
+                <input type="text" name="name" class="border rounded p-2 w-full" required>
+
+                <label>Email</label>
+                <input type="email" name="email" class="border rounded p-2 w-full" required>
+        
+                <label>Picture</label>
+                <input type="file" name="image" class="border rounded p-2 w-full">
+        
+                <label>Biography</label>
+                <textarea name="biography" class="border rounded p-2 w-full" required></textarea>
+        
+                <button type="submit" class="bg-blue-500 text-white px-4 py-2 mt-4">Add Author</button>
+            </form>
+        </div>
+    </div>
+</body>
+</html>

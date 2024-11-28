@@ -3,7 +3,6 @@ package bookstore.models;
 import jakarta.persistence.*;
 
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
@@ -92,10 +91,18 @@ public class User implements UserDetails {
         this.roles = roles;
     }
 
-    @Override
+    /* @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         // Here you can return the authorities/roles of the user
         return Collections.singleton(new SimpleGrantedAuthority("ROLE_USER"));
+    } */
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        Set<SimpleGrantedAuthority> authorities = new HashSet<>();
+        for (Role role : roles) {
+            authorities.add(new SimpleGrantedAuthority(role.getName()));
+        }
+        return authorities;
     }
 
     @Override

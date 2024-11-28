@@ -21,10 +21,11 @@ public class ForgotPasswordController {
 
     // Forgot password page
     @GetMapping("/forgot-password")
-    public String showForgotPasswordForm(HttpServletRequest request, HttpServletResponse response) {
+    public String showForgotPasswordForm(HttpServletRequest request, HttpServletResponse response, Model model) {
         if (SecurityUtil.isAuthenticated()) {
             return SecurityUtil.handleAuthenticatedUserRedirect(request, response, "/auth/dashboard");
         }
+        model.addAttribute("pageTitle", "Forget Password - Company name");
         return "auth/forgot-password";
     }
 

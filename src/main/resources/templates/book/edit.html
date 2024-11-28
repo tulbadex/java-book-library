@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout}">
+<head>
+    <title>Edit Book</title>
+</head>
+<body>
+    <div layout:fragment="content">
+        <div class="container mx-auto">
+            <h1 class="text-2xl font-bold mb-4">Edit Book</h1>
+    
+            <form th:action="@{/books/edit/{id}(id=${book.id})}" method="post" enctype="multipart/form-data" class="space-y-4">
+                <div>
+                    <label for="title">Title</label>
+                    <input type="text" id="title" name="title" th:value="${book.title}" class="border p-2 w-full">
+                </div>
+    
+                <div>
+                    <label for="isbn">ISBN</label>
+                    <input type="text" id="isbn" name="isbn" th:value="${book.isbn}" class="border p-2 w-full">
+                </div>
+    
+                <div>
+                    <label for="author">Author</label>
+                    <select id="authorId" name="authorId" class="border p-2 w-full">
+                        <option th:each="author : ${authors}" th:value="${author.id}" th:selected="${author.id == book.author.id}"
+                                th:text="${author.name}">Select Author</option>
+                    </select>
+                </div>
+    
+                <div>
+                    <label for="category">Category</label>
+                    <select id="categoryId" name="categoryId" class="border p-2 w-full">
+                        <option th:each="category : ${categories}" th:value="${category.id}" th:selected="${category.id == book.category.id}"
+                                th:text="${category.name}">Select Category</option>
+                    </select>
+                </div>
+    
+                <div>
+                    <label for="image">Book Image</label>
+                    <input type="file" id="image" name="image" class="border p-2 w-full">
+                </div>
+    
+                <button type="submit" class="bg-blue-500 text-white px-4 py-2">Update Book</button>
+            </form>
+        </div>
+    </div>
+</body>
+</html>

@@ -10,6 +10,9 @@ import jakarta.mail.internet.MimeMessage;
 import jakarta.servlet.http.HttpServletRequest;
 import bookstore.repository.RoleRepository;
 import bookstore.repository.PasswordResetTokenRepository;
+
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -17,6 +20,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 // import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
+import org.springframework.scheduling.annotation.Async;
 
 import java.time.LocalDate;
 import java.time.ZoneId;
@@ -71,6 +75,19 @@ public class UserService {
             throw new Exception("Last name is required.");
         }
 
+        // Validate username length
+        if (userDto.getUsername().length() < 3 || userDto.getUsername().length() > 20) {
+            throw new Exception("Username must be between 3 and 20 characters.");
+        }
+
+        if (userDto.getFirstName().length() < 3 || userDto.getFirstName().length() > 20) {
+            throw new Exception("First name must be between 3 and 20 characters.");
+        }
+
+        if (userDto.getLastName().length() < 3 || userDto.getLastName().length() > 20) {
+            throw new Exception("Last name must be between 3 and 20 characters.");
+        }
+
         // Validate password strength
         if (!isPasswordStrong(userDto.getPassword())) {
             throw new Exception("Password must be at least 8 characters, include a digit, an uppercase letter, a lowercase letter, and a special character.");
@@ -94,6 +111,7 @@ public class UserService {
         return userRepository.findByEmail(email);
     }
 
+    @Async
     public void sendPasswordResetLink(String email, HttpServletRequest request) throws MessagingException {
         User user = userRepository.findByEmail(email)
             .orElseThrow(() -> new IllegalArgumentException("No user found with this email"));
@@ -143,6 +161,11 @@ public class UserService {
         userRepository.save(user);
     }
 
+    // Update user profile
+    public void updateUserProfile(User user) {
+        userRepository.save(user);  // Just saving the user object updates the profile
+    }
+
     // Update user's password and delete the reset token
     @Transactional
     public void updatePasswordAndDeleteToken(User user, String newPassword, String token) {
@@ -157,6 +180,21 @@ public class UserService {
     public Optional<User> findByUsername(String username) {
         return userRepository.findByUsername(username);
     }
+
+    public Optional<User> getCurrentUser() {
+        // Get the authentication object from the security context
+        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+    
+        // Check if the principal is an instance of UserDetails
+        if (principal instanceof UserDetails) {
+            String username = ((UserDetails) principal).getUsername();
+            // Fetch the user details from the database using the username
+            return userRepository.findByEmail(username);
+        } else {
+            // Handle the case where the principal is not an instance of UserDetails
+            return Optional.empty();
+        }
+    }    
 
     // Check if password meets the complexity requirements
     public boolean isPasswordStrong(String password) {
@@ -212,19 +250,26 @@ public class UserService {
     //     userRepository.save(user);
     // }
 
+    // UserService method to register admin user
+    @Transactional
     public void registerAdminUser(UserDto adminUserDto) {
-        // Convert UserDto to User entity
-        User user = new User();
-        user.setEmail(adminUserDto.getEmail());
-        user.setPassword(passwordEncoder.encode(adminUserDto.getPassword())); // Assuming passwordEncoder is used
-        user.setFirstName(adminUserDto.getFirstName());
-        user.setLastName(adminUserDto.getLastName());
-    
-        // Assign roles (assuming the roles were set in the DTO or are predefined)
-        user.setRoles(adminUserDto.getRoles());
-    
-        // Save the user
-        userRepository.save(user);
+        User adminUser = new User();
+        adminUser.setEmail(adminUserDto.getEmail());
+        adminUser.setUsername(adminUserDto.getUsername()); // Set the username to the email or another unique value
+        adminUser.setPassword(passwordEncoder.encode(adminUserDto.getPassword())); // Encode the password
+        adminUser.setFirstName(adminUserDto.getFirstName());
+        adminUser.setLastName(adminUserDto.getLastName());
+
+        // Fetch the roles from the database to ensure they are managed entities
+        Set<Role> managedRoles = new HashSet<>();
+        for (Role role : adminUserDto.getRoles()) {
+            Role managedRole = roleRepository.findById(role.getId()).orElseThrow(() -> new IllegalStateException("Role not found: " + role.getName()));
+            managedRoles.add(managedRole);
+        }
+        adminUser.setRoles(managedRoles);
+
+        logger.info("Registering admin user: {}", adminUser);
+        userRepository.save(adminUser); // Save the user to the database
     }
 
     // Helper method to build the HTML email content

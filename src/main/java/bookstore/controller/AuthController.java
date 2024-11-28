@@ -11,13 +11,11 @@ import jakarta.validation.Valid;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.security.web.savedrequest.HttpSessionRequestCache;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
-import org.springframework.security.web.savedrequest.SavedRequest;
 
 @Controller
 @RequestMapping("/auth")
@@ -39,6 +37,7 @@ public class AuthController {
         if (SecurityUtil.isAuthenticated()) {
             return SecurityUtil.handleAuthenticatedUserRedirect(request, response, "/auth/dashboard");
         }
+        model.addAttribute("pageTitle", "Registration - Company name");
         model.addAttribute("user", new UserDto());
         return "auth/register"; // The register form view
     }
@@ -74,6 +73,7 @@ public class AuthController {
         if (SecurityUtil.isAuthenticated()) {
             return SecurityUtil.handleAuthenticatedUserRedirect(request, response, "/auth/dashboard");
         }
+        model.addAttribute("pageTitle", "Login - Company name");
         return "auth/login"; // The login form view
     }
 
@@ -87,7 +87,7 @@ public class AuthController {
         // Fetch the custom User entity from the database
         User user = userService.findByEmail(securityUser.getUsername())
             .orElseThrow(() -> new UsernameNotFoundException("User not found"));
-        
+        model.addAttribute("pageTitle", "Dashboard - Company name");
         model.addAttribute("user", user); // Pass user details to the dashboard
         return "dashboard/dashboard";
     }
