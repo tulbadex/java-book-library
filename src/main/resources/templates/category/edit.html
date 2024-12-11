@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout}">
+<head>
+    <title>Edit Category</title>
+    <script th:src="@{/js/flashMessages.js}"></script>
+</head>
+<body>
+    <div layout:fragment="content">
+        <div class="container mx-auto">
+            <h1 class="text-2xl font-bold mb-4">Edit Category</h1>
+            <div id="flash-messages">
+                <div th:if="${successMessage}" class="bg-green-500 text-white p-2 mb-4">
+                    <p th:text="${successMessage}"></p>
+                </div>
+                <div th:if="${errorMessage}" class="bg-red-500 text-white p-2 mb-4">
+                    <p th:text="${errorMessage}"></p>
+                </div>
+            </div>
+    
+            <form th:action="@{/category/edit/{id}(id=${category.id})}" method="post" class="space-y-4">
+                <div>
+                    <label for="name">Name</label>
+                    <input type="text" id="name" name="name" th:value="${category.name}" class="border p-2 w-full">
+                </div>
+    
+                <button type="submit" class="bg-blue-500 text-white px-4 py-2">Update Category</button>
+            </form>
+        </div>
+    </div>
+</body>
+</html>

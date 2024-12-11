@@ -4,7 +4,12 @@ import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
-public class AuthorDTO {
+import java.util.UUID;
+
+
+public class UpdateAuthorDTO {
+    private UUID id; // Add this field
+
     @NotBlank(message = "Name is required")
     private String name;
 
@@ -22,6 +27,14 @@ public class AuthorDTO {
     private String gender;
 
     // Getters and Setters
+    public UUID getId() {
+        return id;
+    }
+
+    public void setId(UUID id) {
+        this.id = id;
+    }
+
     public String getName() {
         return name;
     }
@@ -57,7 +70,7 @@ public class AuthorDTO {
     public String getGender() {
         return gender;
     }
-    
+
     public void setGender(String gender) {
         this.gender = gender;
     }

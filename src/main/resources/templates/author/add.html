@@ -3,10 +3,19 @@
       layout:decorate="~{layout}">
 <head>
     <title>Add Author</title>
+    <script th:src="@{/js/flashMessages.js}"></script>
 </head>
 <body>
     <div layout:fragment="content">
         <div class="container mx-auto">
+            <div id="flash-messages">
+                <div th:if="${successMessage}" class="bg-green-500 text-white p-2 mb-4">
+                    <p th:text="${successMessage}"></p>
+                </div>
+                <div th:if="${errorMessage}" class="bg-red-500 text-white p-2 mb-4">
+                    <p th:text="${errorMessage}"></p>
+                </div>
+            </div>
             <h1 class="text-2xl font-bold mb-4">Add New Author</h1>
     
             <form th:action="@{/authors/add}" method="post" enctype="multipart/form-data">
@@ -15,7 +24,14 @@
 
                 <label>Email</label>
                 <input type="email" name="email" class="border rounded p-2 w-full" required>
-        
+
+                <label>Gender</label>
+                <select name="gender" class="border rounded p-2 w-full" required>
+                    <option value="">Select a gender</option>
+                    <option value="male">Male</option>
+                    <option value="female">Female</option>
+                </select>
+
                 <label>Picture</label>
                 <input type="file" name="image" class="border rounded p-2 w-full">
         

@@ -2,6 +2,7 @@ package bookstore.models;
 
 import jakarta.persistence.*;
 import java.util.UUID;
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -14,8 +15,11 @@ public class Author {
     @Column(nullable = false)
     private String name;
 
-    @Column(nullable = false)
+    @Column(nullable = false, unique = true)
     private String email;
+
+    @Column(nullable = false)
+    private String gender;
 
     @Column(nullable = false)
     private String biography;
@@ -23,8 +27,8 @@ public class Author {
     @Column(nullable = true)
     private String imageUrl; // URL to the author's image
 
-    @OneToMany(mappedBy = "author")
-    private List<Book> books;
+    @OneToMany(mappedBy = "author", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Book> books = new ArrayList<>();
 
     public Author() {}
 
@@ -75,5 +79,13 @@ public class Author {
 
     public void setBooks(List<Book> books) {
         this.books = books;
+    }
+
+    public String getGender() {
+        return gender;
+    }
+    
+    public void setGender(String gender) {
+        this.gender = gender;
     }
 }

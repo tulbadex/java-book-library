@@ -9,4 +9,5 @@ import java.util.UUID;
 public interface AuthorRepository extends JpaRepository<Author, UUID> {
     // Find author by name
     Author findByName(String name);
+    boolean existsByEmail(String email);
 }

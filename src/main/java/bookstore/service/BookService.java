@@ -2,9 +2,7 @@ package bookstore.service;
 
 import bookstore.models.Book;
 import bookstore.repository.BookRepository;
-import bookstore.models.Author;
 import bookstore.repository.AuthorRepository;
-import bookstore.models.Category;
 import bookstore.repository.CategoryRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;

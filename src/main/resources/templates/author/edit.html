@@ -3,10 +3,20 @@
       layout:decorate="~{layout}">
 <head>
     <title>Edit Author</title>
+    <script th:src="@{/js/flashMessages.js}"></script>
 </head>
 <body>
     <div layout:fragment="content">
         <div class="container mx-auto">
+            <div id="flash-messages">
+                <div th:if="${successMessage}" class="bg-green-500 text-white p-2 mb-4">
+                    <p th:text="${successMessage}"></p>
+                </div>
+                <div th:if="${errorMessage}" class="bg-red-500 text-white p-2 mb-4">
+                    <p th:text="${errorMessage}"></p>
+                </div>
+            </div>
+            
             <h2 class="text-2xl font-bold mb-4">Edit Author</h2>
             <form th:action="@{/authors/edit/{id}(id=${author.id})}" method="post" enctype="multipart/form-data">
                 <label>Name</label>

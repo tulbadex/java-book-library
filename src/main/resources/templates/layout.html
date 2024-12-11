@@ -5,18 +5,19 @@
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title th:text="${pageTitle}">Authentication Page</title>
+        <title th:text="${pageTitle}">Dashboard</title>
         <link rel="stylesheet" th:href="@{/css/output.css}" />
     </head>
-    <body>
+    <body class="h-screen flex flex-col bg-gray-100">
+        <!-- Header -->
         <header>
             <nav class="bg-blue-500 p-4">
                 <div class="container mx-auto flex justify-between items-center">
-                    <div class="text-white text-lg font-bold">Your Company</div>
+                    <div class="text-white text-lg font-bold cursor-pointer" onclick="redirectToDashboard()">Your Company</div>
                     <ul class="flex space-x-4">
                         <li><a th:href="@{/books/list}" class="text-white">Books</a></li>
-                        <li><a th:href="@{/categories}" class="text-white">Categories</a></li>
-                        <li><a th:href="@{/authors}" class="text-white">Authors</a></li>
+                        <li><a th:href="@{/category/list}" class="text-white">Categories</a></li>
+                        <li><a th:href="@{/authors/list}" class="text-white">Authors</a></li>
                         <li sec:authorize="!isAuthenticated()">
                             <a th:href="@{/auth/login}" class="text-white">Login</a>
                         </li>
@@ -25,17 +26,14 @@
                         </li>
                         <li sec:authorize="isAuthenticated()">
                             <div class="relative">
-                                <!-- Profile icon with SVG -->
                                 <button id="profileMenu" class="text-white" onclick="toggleDropdown()">
                                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" 
                                          stroke-width="2" stroke-linecap="round" stroke-linejoin="round" 
-                                         class="w-6 h-6"> <!-- Define size -->
+                                         class="w-6 h-6">
                                         <path d="M20.24 18.24a9 9 0 1 0-16.48 0"/>
                                         <circle cx="12" cy="7" r="4"/>
                                     </svg>
                                 </button>
-                                
-                                <!-- Dropdown content, hidden by default -->
                                 <div id="dropdown" class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg hidden">
                                     <a th:href="@{/user/profile}" class="block px-4 py-2 text-gray-800">Profile</a>
                                     <a th:href="@{/user/change-password}" class="block px-4 py-2 text-gray-800">Change Password</a>
@@ -49,22 +47,101 @@
                 </div>
             </nav>
         </header>
-        
-        <!-- Dynamic Content -->
-        <main layout:fragment="content" class="py-10"></main>
 
-        <footer class="bg-gray-800 text-white text-center p-4 mt-10">
+        <!-- Sidebar and Main Content -->
+        <div class="flex flex-grow">
+            <!-- Sidebar -->
+            <aside id="sidebar" class="bg-blue-500 text-white w-64 transition-width duration-300 h-full flex flex-col"
+                   sec:authorize="isAuthenticated()">
+                <div class="flex items-center justify-between p-4">
+                    <span id="dashboardText" class="text-lg font-bold">Dashboard</span>
+                    <button id="sidebarToggle" onclick="toggleSidebar()" class="focus:outline-none">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-6 h-6">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"/>
+                        </svg>
+                    </button>
+                </div>
+                <nav class="mt-4 flex-1">
+                    <ul class="space-y-2">
+                        <li>
+                            <a th:href="@{/books/list}" class="flex items-center p-4 hover:bg-blue-600">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h11M9 21V3M21 14H12"/>
+                                </svg>
+                                <span class="ml-4 sidebar-text">Books</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a th:href="@{/category/list}" class="flex items-center p-4 hover:bg-blue-600">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8l7-7m0 0l7 7M5 8v8a4 4 0 004 4h6a4 4 0 004-4V8"/>
+                                </svg>
+                                <span class="ml-4 sidebar-text">Categories</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a th:href="@{/authors/list}" class="flex items-center p-4 hover:bg-blue-600">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7h18M9 21V3m12 14H12"/>
+                                </svg>
+                                <span class="ml-4 sidebar-text">Authors</span>
+                            </a>
+                        </li>
+                    </ul>
+                </nav>
+            </aside>
+
+            <!-- Main Content -->
+            <main id="content" class="flex-1 p-4 transition-all duration-300">
+                <div layout:fragment="content" class="bg-white p-6 rounded shadow">
+                    <!-- Dynamic Content -->
+                </div>
+            </main>
+        </div>
+
+        <!-- Footer -->
+        <footer class="bg-gray-800 text-white text-center p-4">
             <p>&copy; <span id="year"></span> Your Company</p>
-            <!-- <span th:text="${T(java.time.Year).now()}"></span> -->
         </footer>
-    </body>
 
-    <script>
-        // Dropdown toggle function
-        function toggleDropdown() {
-            var dropdown = document.getElementById('dropdown');
-            dropdown.classList.toggle('hidden');  // Toggle hidden class
-        }
-        document.getElementById("year").textContent = new Date().getFullYear();
-    </script>
+        <script>
+            function toggleSidebar() {
+                const sidebar = document.getElementById("sidebar");
+                const content = document.getElementById("content");
+                const dashboardText = document.getElementById("dashboardText");
+                const isCollapsed = sidebar.classList.contains("w-20");
+
+                if (isCollapsed) {
+                    sidebar.classList.remove("w-20");
+                    sidebar.classList.add("w-64");
+                    dashboardText.classList.remove("hidden");
+                    document.querySelectorAll(".sidebar-text").forEach(el => el.classList.remove("hidden"));
+                } else {
+                    sidebar.classList.add("w-20");
+                    sidebar.classList.remove("w-64");
+                    dashboardText.classList.add("hidden");
+                    document.querySelectorAll(".sidebar-text").forEach(el => el.classList.add("hidden"));
+                }
+            }
+
+            function toggleDropdown() {
+                var dropdown = document.getElementById('dropdown');
+                dropdown.classList.toggle('hidden');  // Toggle hidden class
+            }
+
+            // Set footer year dynamically
+            document.getElementById("year").textContent = new Date().getFullYear();
+
+            function redirectToDashboard() {
+                // Define the dashboard URL
+                const dashboardUrl = '/auth/dashboard';
+        
+                // Check if the current URL is not the dashboard
+                if (window.location.pathname !== dashboardUrl) {
+                    // Redirect to the dashboard
+                    window.location.href = dashboardUrl;
+                }
+            }
+        </script>
+    </body>
 </html>

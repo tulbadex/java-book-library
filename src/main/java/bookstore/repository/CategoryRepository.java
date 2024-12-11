@@ -12,4 +12,5 @@ public interface CategoryRepository extends JpaRepository<Category, UUID> {
     // Find category by name
     // Category findByName(String name);
     Optional<Category> findByName(String name);
+    boolean existsByName(String name);
 }
