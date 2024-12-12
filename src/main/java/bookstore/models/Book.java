@@ -2,6 +2,10 @@ package bookstore.models;
 
 import jakarta.persistence.*;
 import java.util.UUID;
+
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
+
 import java.util.Date;
 
 @Entity
@@ -10,12 +14,20 @@ public class Book {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private UUID id;
 
+    @Column(nullable = false, unique = true)
     private String title;
+    @Column(nullable = false, unique = true)
     private String isbn;
-    private boolean isBorrowed;
+    private boolean isBorrowed = false;
     private String imageUrl;
-    private Date publishedDate;
+    private Date publishedDate = null;
     private String description;
+    @CreationTimestamp
+    @Column(updatable = false, name = "created_at")
+    private Date createdAt;
+    @UpdateTimestamp
+    @Column(name = "updated_at")
+    private Date updatedAt;
 
     @ManyToOne
     private Author author;

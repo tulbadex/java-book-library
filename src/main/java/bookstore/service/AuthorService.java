@@ -13,6 +13,7 @@ import org.springframework.dao.DataAccessException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -42,7 +43,7 @@ public class AuthorService {
     @Cacheable(value = "authors", key = "'page_' + #page") // Cache paginated results
     public Page<Author> getPaginatedAuthors(int page) {
         int pageSize = 20; // Define page size
-        Pageable pageable = PageRequest.of(page - 1, pageSize);
+        Pageable pageable = PageRequest.of(page - 1, pageSize, Sort.by(Sort.Direction.DESC, "createdAt"));
         return authorRepository.findAll(pageable);
     }
 
@@ -70,10 +71,6 @@ public class AuthorService {
         try {
             Author author = new Author();
             populateAuthorFields(author, authorDTO);
-            // author.setName(authorDTO.getName());
-            // author.setEmail(authorDTO.getEmail());
-            // author.setBiography(authorDTO.getBiography());
-            // author.setGender(authorDTO.getGender());
 
             Author savedAuthor = authorRepository.save(author);
             if (file != null && !file.isEmpty()) {
@@ -95,32 +92,41 @@ public class AuthorService {
         Files.createDirectories(filePath.getParent());
         Files.write(filePath, file.getBytes());
 
-        // Update author with image URL
-        // author.setImageUrl(fileName);
         // Set the relative URL for the image
         author.setImageUrl("/" + UPLOAD_DIR + "/" + fileName);
         authorRepository.save(author);
     }
 
     // Update author and refresh cache
+    // @Transactional
+    // @CacheEvict(value = "authors", allEntries = true) // Clear related caches
+    // @CachePut(value = "authors", key = "#id")
     @Transactional
-    @CacheEvict(value = "authors", allEntries = true) // Clear related caches
-    @CachePut(value = "authors", key = "#id")
+    @CacheEvict(value = "authors", allEntries = true)
     public Author updateAuthor(UUID id, @Valid UpdateAuthorDTO authorDTO, MultipartFile file) {
         Author author = findAuthorById(id);
 
         try {
-            author.setId(authorDTO.getId());
+            // Update fields
             author.setName(authorDTO.getName());
             author.setEmail(authorDTO.getEmail());
             author.setBiography(authorDTO.getBiography());
             author.setGender(authorDTO.getGender());
-            if (authorDTO.getImageUrl() != null) {
-                author.setImageUrl(authorDTO.getImageUrl());
-            }
 
+            // Handle image update
             if (file != null && !file.isEmpty()) {
-                this.uploadAuthorImage(id, file);
+                // Delete old image if it exists
+                if (author.getImageUrl() != null) {
+                    String relativePath = author.getImageUrl().startsWith("/") 
+                                    ? author.getImageUrl().substring(1) 
+                                    : author.getImageUrl();
+                
+                    Path imagePath = Paths.get(relativePath);
+                    Files.deleteIfExists(imagePath);
+                }
+
+                // Upload new image
+                uploadAuthorImage(id, file);
             }
 
             return authorRepository.save(author);
@@ -134,6 +140,22 @@ public class AuthorService {
     @CacheEvict(value = "authors", allEntries = true)
     public void deleteAuthor(UUID id) {
         Author author = findAuthorById(id);
+
+        if (author.getImageUrl() != null) {
+            try {
+                // Normalize the path by removing leading slash if present
+                String relativePath = author.getImageUrl().startsWith("/") 
+                                    ? author.getImageUrl().substring(1) 
+                                    : author.getImageUrl();
+                
+                Path imagePath = Paths.get(relativePath); // Create Path from normalized string
+                if (Files.exists(imagePath)) {
+                    Files.delete(imagePath); // Delete the file if it exists
+                }
+            } catch (IOException e) {
+                throw new RuntimeException("Error deleting author's image: " + e.getMessage());
+            }
+        }
 
         try {
             authorRepository.delete(author);

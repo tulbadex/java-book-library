@@ -3,42 +3,80 @@
       layout:decorate="~{layout}">
 <head>
     <title>Edit Book</title>
+    <script th:src="@{/js/flashMessages.js}"></script>
 </head>
 <body>
     <div layout:fragment="content">
         <div class="container mx-auto">
             <h1 class="text-2xl font-bold mb-4">Edit Book</h1>
+
+            <div id="flash-messages">
+                <div th:if="${successMessage}" class="bg-green-500 text-white p-2 mb-4">
+                    <p th:text="${successMessage}"></p>
+                </div>
+                <div th:if="${errorMessage}" class="bg-red-500 text-white p-2 mb-4">
+                    <p th:text="${errorMessage}"></p>
+                </div>
+            </div>
     
-            <form th:action="@{/books/edit/{id}(id=${book.id})}" method="post" enctype="multipart/form-data" class="space-y-4">
+            <form th:action="@{/books/edit/{id}(id=${book.id})}" th:object="${book}" method="post" enctype="multipart/form-data" class="space-y-4">
                 <div>
                     <label for="title">Title</label>
-                    <input type="text" id="title" name="title" th:value="${book.title}" class="border p-2 w-full">
+                    <input type="text" id="title" name="title" th:field="*{title}" class="border p-2 w-full" required>
+                    <div th:if="${#fields.hasErrors('title')}" class="text-red-500 text-sm">
+                        <p th:text="${#fields.errors('title')[0]}"></p>
+                    </div>
                 </div>
+
+                <div>
+                    <label for="description">Description</label>
+                    <textarea id="description" name="description" th:field="*{description}" class="border rounded p-2 w-full" rows="10" cols="20" required></textarea>
+                    <div th:if="${#fields.hasErrors('description')}" class="text-red-500 text-sm">
+                        <p th:text="${#fields.errors('description')[0]}"></p>
+                    </div>
+                </div>  
     
                 <div>
                     <label for="isbn">ISBN</label>
-                    <input type="text" id="isbn" name="isbn" th:value="${book.isbn}" class="border p-2 w-full">
+                    <input type="text" id="isbn" name="isbn" th:field="*{isbn}" class="border p-2 w-full" required>
+                    <div th:if="${#fields.hasErrors('isbn')}" class="text-red-500 text-sm">
+                        <p th:text="${#fields.errors('isbn')[0]}"></p>
+                    </div>
                 </div>
     
                 <div>
                     <label for="author">Author</label>
-                    <select id="authorId" name="authorId" class="border p-2 w-full">
-                        <option th:each="author : ${authors}" th:value="${author.id}" th:selected="${author.id == book.author.id}"
-                                th:text="${author.name}">Select Author</option>
+                    <select id="authorId" name="authorId" class="border p-2 w-full" th:field="*{authorId}" required>
+                        <option th:each="author : ${authors}" th:value="${author.id}" th:text="${author.name}" th:selected="${author.id == book.author.id}">
+                            Select Author
+                        </option>
                     </select>
+                    <div th:if="${#fields.hasErrors('authorId')}" class="text-red-500 text-sm">
+                        <p th:text="${#fields.errors('authorId')[0]}"></p>
+                    </div>
                 </div>
     
                 <div>
                     <label for="category">Category</label>
-                    <select id="categoryId" name="categoryId" class="border p-2 w-full">
-                        <option th:each="category : ${categories}" th:value="${category.id}" th:selected="${category.id == book.category.id}"
-                                th:text="${category.name}">Select Category</option>
+                    <select id="categoryId" name="categoryId" class="border p-2 w-full" th:field="*{categoryId}" required>
+                        <option th:each="category : ${categories}" th:value="${category.id}" th:text="${category.name}" th:selected="${category.id == book.category.id}">
+                            Select Category
+                        </option>
                     </select>
+                    <div th:if="${#fields.hasErrors('categoryId')}" class="text-red-500 text-sm">
+                        <p th:text="${#fields.errors('categoryId')[0]}"></p>
+                    </div>
                 </div>
     
                 <div>
                     <label for="image">Book Image</label>
+                    <div>
+                        <img th:src="@{${book.imageUrl}}" alt="Book Image" class="w-32 h-32 object-cover" th:if="${book.imageUrl}" />
+                    </div>
                     <input type="file" id="image" name="image" class="border p-2 w-full">
+                    <div th:if="${#fields.hasErrors('imageUrl')}" class="text-red-500 text-sm">
+                        <p th:text="${#fields.errors('imageUrl')[0]}"></p>
+                    </div>                    
                 </div>
     
                 <button type="submit" class="bg-blue-500 text-white px-4 py-2">Update Book</button>

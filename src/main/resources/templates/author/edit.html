@@ -16,20 +16,52 @@
                     <p th:text="${errorMessage}"></p>
                 </div>
             </div>
-            
-            <h2 class="text-2xl font-bold mb-4">Edit Author</h2>
-            <form th:action="@{/authors/edit/{id}(id=${author.id})}" method="post" enctype="multipart/form-data">
-                <label>Name</label>
-                <input type="text" name="name" th:value="${author.name}" class="border rounded p-2 w-full" required>
 
-                <label>Email</label>
-                <input type="email" name="email" th:value="${author.email}" class="border rounded p-2 w-full" required>
+            <h2 class="text-2xl font-bold mb-4">Edit Author</h2>
+            <form th:action="@{/authors/edit/{id}(id=${author.id})}" th:object="${author}" method="post" enctype="multipart/form-data">
+                <input type="hidden" th:field="*{id}" name="id"/>
+                
+                <div>
+                    <label>Name</label>
+                    <input type="text" th:field="*{name}" class="border rounded p-2 w-full" required>
+                    <div th:if="${#fields.hasErrors('name')}" class="text-red-500 text-sm">
+                        <p th:text="${#fields.errors('name')[0]}"></p>
+                    </div>
+                </div>
+
+                <div>
+                    <label>Email</label>
+                    <input type="email" th:field="*{email}" class="border rounded p-2 w-full" required>
+                    <div th:if="${#fields.hasErrors('email')}" class="text-red-500 text-sm">
+                        <p th:text="${#fields.errors('email')[0]}"></p>
+                    </div>
+                </div>
+
+                <div> 
+                    <label for="gender">Gender</label> 
+                    <select name="gender" id="gender" class="border rounded p-2 w-full" required> 
+                        <option value="">Select a gender</option> 
+                        <option value="male" th:selected="${author.gender == 'male'}">Male</option> 
+                        <option value="female" th:selected="${author.gender == 'female'}">Female</option> 
+                    </select> 
+                    <div th:if="${#fields.hasErrors('gender')}" class="text-red-500 text-sm">
+                        <p th:text="${#fields.errors('gender')[0]}"></p>
+                    </div>
+                </div>
 
                 <label>Picture</label>
+                <div>
+                    <img th:src="@{${author.imageUrl}}" alt="Author Image" class="w-32 h-32 object-cover" th:if="${author.imageUrl}" />
+                </div>
                 <input type="file" name="image" class="border rounded p-2 w-full">
 
-                <label>Biography</label>
-                <textarea name="biography" class="border rounded p-2 w-full" th:text="${author.biography}" required></textarea>
+                <div>
+                    <label>Biography</label>
+                    <textarea th:field="*{biography}" class="border rounded p-2 w-full" required></textarea>
+                    <div th:if="${#fields.hasErrors('biography')}" class="text-red-500 text-sm">
+                        <p th:text="${#fields.errors('biography')[0]}"></p>
+                    </div>
+                </div>
 
                 <button type="submit" class="bg-blue-500 text-white px-4 py-2 mt-4">Update Author</button>
             </form>

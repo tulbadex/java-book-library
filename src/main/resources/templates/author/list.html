@@ -23,17 +23,21 @@
                 <a href="/authors/add" class="bg-blue-500 text-white px-4 py-2 mb-4 inline-block">Add New Author</a>
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                <div th:each="author : ${authors}" class="border rounded-lg p-4 shadow">
-                    <img th:src="${author.imageUrl != null ? author.imageUrl : (author.gender == 'male' ? '/uploads/default/male_default.jpg' : '/uploads/default/female_default.png')}" alt="Author Image" class="mb-4 object-cover w-32 h-32 rounded-md">
-                    <h5 class="text-xl font-bold" th:text="${author.name}"></h5>
-                    <a th:href="@{/authors/{id}(id=${author.id})}" class="text-blue-600 underline">View Details</a>
+            <!-- Flexbox for side-by-side alignment -->
+            <div class="flex flex-wrap gap-6">
+                <div th:each="author : ${authors}" class="border rounded-lg p-4 shadow w-64">
+                    <!-- Ensure images have a fixed size -->
+                    <img th:src="${author.imageUrl != null ? author.imageUrl : (author.gender == 'male' ? '/uploads/default/male_default.jpg' : '/uploads/default/female_default.png')}"
+                         alt="Author Image"
+                         class="mb-4 w-32 h-32 object-cover mx-auto rounded-md" />
+
+                    <h5 class="text-lg font-bold text-center" th:text="${author.name}"></h5>
+                    <a th:href="@{/authors/view/{id}(id=${author.id})}" class="text-blue-600 underline text-center block">View Details</a>
 
                     <!-- Show Edit and Delete buttons only for ROLE_ADMIN -->
-                    <div sec:authorize="hasRole('ROLE_ADMIN')" class="mt-4">
+                    <div sec:authorize="hasRole('ROLE_ADMIN')" class="mt-4 flex justify-center space-x-2">
                         <a th:href="@{/authors/edit/{id}(id=${author.id})}" class="text-blue-500">Edit</a> |
                         <form th:action="@{/authors/delete/{id}(id=${author.id})}" method="post" style="display:inline;">
-                            <!-- Include the current page as a hidden input -->
                             <input type="hidden" name="page" th:value="${page}" />
                             <button type="submit" class="text-red-500"
                                     onclick="return confirm('Are you sure you want to delete this author?');">

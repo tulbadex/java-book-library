@@ -6,10 +6,6 @@ import bookstore.models.Author;
 import bookstore.service.AuthorService;
 import jakarta.validation.Valid;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -60,12 +56,14 @@ public class AuthorController {
         return "author/details";
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/add")
     public String addAuthorForm(Model model) {
         model.addAttribute("author", new AuthorDTO());
         return "author/add";
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/add")
     public String createAuthor(@Valid AuthorDTO authorDTO, 
         @RequestParam("image") MultipartFile imageFile, Model model, 
@@ -106,29 +104,46 @@ public class AuthorController {
 
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/edit/{id}")
-    public String editAuthor(@PathVariable("id") UUID id,
-                            // @Valid @ModelAttribute("author") UpdateAuthorDTO authorDTO,
-                            @Valid @ModelAttribute("author") UpdateAuthorDTO authorDTO,
-                            BindingResult result,
-                            RedirectAttributes redirectAttributes,
-                            Model model,
-                            @RequestParam("image") MultipartFile imageFile) {
+    public String updateAuthor(
+            @PathVariable("id") UUID id,
+            @Valid @ModelAttribute("author") UpdateAuthorDTO authorDTO,
+            @RequestParam(value = "image", required = false) MultipartFile imageFile,
+            BindingResult result,
+            RedirectAttributes redirectAttributes,
+            Model model) {
         if (result.hasErrors()) {
-            model.addAttribute("pageTitle", "Edit Author - Company name");
+            model.addAttribute("pageTitle", "Edit Author - Company Name");
             return "author/edit";
+            // return "redirect:/authors/edit/" + id; // Return the view template for editing.
         }
+
         try {
-            if (imageFile != null && !imageFile.isEmpty()) {
-                authorService.updateAuthor(id, authorDTO, imageFile);
-            } else {
-                authorService.updateAuthor(id, authorDTO, null);
-            }
+            // Update author logic
+            authorService.updateAuthor(id, authorDTO, (imageFile == null || imageFile.isEmpty()) ? null : imageFile);
             redirectAttributes.addFlashAttribute("successMessage", "Author updated successfully!");
             return "redirect:/authors/list";
         } catch (Exception e) {
-            model.addAttribute("errorMessage", "Error updating author: " + e.getMessage());
             model.addAttribute("author", authorDTO);
-            return "author/edit";
+            model.addAttribute("errorMessage", "Error updating author: " + e.getMessage());
+            return "author/edit"; // Stay on the same page to show the error.
+        }
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @GetMapping("/view/{id}")
+    public String viewAuthor(@PathVariable("id") UUID id, Model model, RedirectAttributes redirectAttributes) {
+        try {
+            Author author = authorService.findAuthorById(id);
+            if (author == null) {
+                redirectAttributes.addFlashAttribute("errorMessage", "Author not found!");
+                return "redirect:/authors/list";
+            }
+            model.addAttribute("author", author);
+            model.addAttribute("pageTitle", "View Author - Company name");
+            return "author/details";
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Error fetching author details: " + e.getMessage());
+            return "redirect:/authors/list";
         }
     }
 
@@ -137,24 +152,6 @@ public class AuthorController {
     public String deleteAuthor(@PathVariable UUID id, 
                                 @RequestParam(defaultValue = "1") int page,
                                 RedirectAttributes redirectAttributes) {
-        Author author = authorService.findAuthorById(id);
-
-        // Attempt to delete the image file if it exists
-        if (author.getImageUrl() != null) {
-            try {
-                // Normalize the path by removing leading slash if present
-                String relativePath = author.getImageUrl().startsWith("/") 
-                                    ? author.getImageUrl().substring(1) 
-                                    : author.getImageUrl();
-                
-                Path imagePath = Paths.get(relativePath); // Create Path from normalized string
-                if (Files.exists(imagePath)) {
-                    Files.delete(imagePath); // Delete the file if it exists
-                }
-            } catch (IOException e) {
-                redirectAttributes.addFlashAttribute("errorMessage", "Error deleting author's image: " + e.getMessage());
-            }
-        }
 
         try {
             authorService.deleteAuthor(id);

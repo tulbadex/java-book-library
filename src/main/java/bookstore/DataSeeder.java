@@ -80,6 +80,9 @@ public class DataSeeder {
             "Children’s"
         );
 
+        // Drop all existing categories
+        // categoryRepository.deleteAll();
+
         for (var catName : categories) {
             Optional<Category> existingCategory = categoryRepository.findByName(catName);
             if(existingCategory.isEmpty()) {

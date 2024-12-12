@@ -1,3 +1,4 @@
+
 package bookstore.controller;
 
 import bookstore.models.Book;
@@ -20,7 +21,6 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.io.IOException;
-import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -43,7 +43,19 @@ public class BookController {
     // No @PreAuthorize annotation here since this method should be accessible to all users
     @GetMapping("/list")
     public String listBooks(Model model, @RequestParam(defaultValue = "1") int page) {
+        // Ensure the page is at least 1
+        if (page < 1) {
+            page = 1;
+        }
+
         Page<Book> booksPage = bookService.getPaginatedBooks(page);
+
+        // Check if the requested page exceeds the total pages
+        if (page > booksPage.getTotalPages() && booksPage.getTotalPages() > 0) {
+            page = booksPage.getTotalPages(); // Redirect to the last page if necessary
+            booksPage = bookService.getPaginatedBooks(page); // Fetch again
+        }
+
         model.addAttribute("books", booksPage.getContent());
         model.addAttribute("page", page);
         model.addAttribute("totalPages", booksPage.getTotalPages());
@@ -55,137 +67,113 @@ public class BookController {
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/add")
     public String showAddBookForm(Model model) {
-        model.addAttribute("book", new Book());
-        model.addAttribute("authors", authorService.getAllAuthors()); // Load authors for dropdown
-        model.addAttribute("categories", categoryService.getAllCategories()); // Load categories for dropdown
+        model.addAttribute("book", new BookDTO());
+        this.populateAuthorsAndCategories(model);
         model.addAttribute("pageTitle", "Add new book - Company name");
         return "book/add"; // This will render the add book form
     }
 
-    // // Handle form submission for adding a new book
-    // @PreAuthorize("hasRole('ADMIN')")
-    // @PostMapping("/add")
-    // public String addBook(@Valid @ModelAttribute BookDTO bookDTO, 
-    //                     BindingResult result,
-    //                     @RequestParam("image") MultipartFile imageFile,
-    //                     RedirectAttributes redirectAttributes) throws IOException {
-    //     if (result.hasErrors()) {
-    //         result.getFieldErrors().forEach(error -> 
-    //             redirectAttributes.addFlashAttribute("errors", Map.of(error.getField(), error.getDefaultMessage())));
-    //         return "redirect:/books/add";
-    //     }
-
-    //     try {
-    //         // Create a new Book entity and set its properties
-    //         Book book = new Book();
-    //         book.setTitle(bookDTO.getTitle());
-    //         book.setDescription(bookDTO.getDescription());
-
-    //         // Find the author by ID if provided
-    //         if (bookDTO.getAuthorId() != null) {
-    //             Author author = authorService.findAuthorById(bookDTO.getAuthorId());
-    //             book.setAuthor(author);
-    //         }
-
-    //         // Find the category by ID
-    //         Category category = categoryService.findCategoryById(bookDTO.getCategoryId());
-    //         book.setCategory(category);
-
-    //         // Save the book and upload the image asynchronously
-    //         Book savedBook = bookService.addBook(book);
-    //         bookService.uploadBookImage(savedBook.getId(), imageFile); // Upload image
-
-    //         redirectAttributes.addFlashAttribute("successMessage", "Book added successfully!");
-    //         return "redirect:/books/list";
-    //     } catch (Exception e) {
-    //         redirectAttributes.addFlashAttribute("errorMessage", "Error adding book: " + e.getMessage());
-    //         return "redirect:/books/add";
-    //     }
-    // }
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/add")
     public String addBook(@Valid @ModelAttribute("book") BookDTO bookDTO,
                         BindingResult result,
                         @RequestParam("image") MultipartFile imageFile,
-                        Model model) {
+                        Model model,
+                        RedirectAttributes redirectAttributes) {
+        // imageUrl
+
         if (result.hasErrors()) {
-            model.addAttribute("authors", authorService.getAllAuthors()); // Repopulate dropdowns
-            model.addAttribute("categories", categoryService.getAllCategories());
-            return "books/add";
+            model.addAttribute("book", bookDTO);
+            this.populateAuthorsAndCategories(model);
+            return "book/add";
         }
 
         try {
-            // Create a new Book entity and set its properties
-            Book book = new Book();
-            book.setTitle(bookDTO.getTitle());
-            book.setDescription(bookDTO.getDescription());
-            book.setIsbn(bookDTO.getIsbn());
-
-            // Set author if ID is provided
-            if (bookDTO.getAuthorId() != null) {
-                Author author = authorService.findAuthorById(bookDTO.getAuthorId());
-                book.setAuthor(author);
+            if (imageFile != null && !imageFile.isEmpty()) {
+                bookService.addBook(bookDTO, imageFile);
+            } else {
+                bookService.addBook(bookDTO, null);
             }
 
-            // Set category
-            Category category = categoryService.findCategoryById(bookDTO.getCategoryId());
-            book.setCategory(category);
-
-            // Save book and upload image
-            Book savedBook = bookService.addBook(book);
-            bookService.uploadBookImage(savedBook.getId(), imageFile);
-
-            model.addAttribute("successMessage", "Book added successfully!");
+            redirectAttributes.addFlashAttribute("successMessage", "Book added successfully!");
             return "redirect:/books/list";
         } catch (Exception e) {
             model.addAttribute("errorMessage", "Error adding book: " + e.getMessage());
-            model.addAttribute("authors", authorService.getAllAuthors());
-            model.addAttribute("categories", categoryService.getAllCategories());
-            return "books/add";
+            this.populateAuthorsAndCategories(model);
+            return "book/add";
         }
     }
 
     // Edit a book by ID (for updating a book)
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/edit/{id}")
-    public String showEditBookForm(@PathVariable UUID id, Model model) {
-        Book book = bookService.findBookById(id).orElseThrow(() -> new IllegalArgumentException("Invalid book ID"));
-        model.addAttribute("book", book);
-        model.addAttribute("authors", authorService.getAllAuthors());
-        model.addAttribute("categories", categoryService.getAllCategories());
-        model.addAttribute("pageTitle", "Edit Book - Company name");
-        return "book/edit"; // This will render the edit book form
+    public String showEditBookForm(@PathVariable UUID id, Model model, RedirectAttributes redirectAttributes) {
+        try {
+            Book book = bookService.findBookById(id);
+            if (book == null) {
+                redirectAttributes.addFlashAttribute("errorMessage", "Book not found!");
+                return "redirect:/books/list";
+            }
+            model.addAttribute("book", book);
+            this.populateAuthorsAndCategories(model);
+            model.addAttribute("pageTitle", "Edit Book - Company name");
+            return "book/edit"; // This will render the edit book form
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Error fetching book details: " + e.getMessage());
+            return "redirect:/books/list";
+        }
     }
 
     // Handle form submission for updating a book
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/edit/{id}")
-    public String updateBook(@PathVariable UUID id, @ModelAttribute Book book,
-                             @RequestParam("authorId") UUID authorId,
-                             @RequestParam("categoryId") UUID categoryId,
-                             @RequestParam("image") MultipartFile imageFile) throws IOException {
-        // Find the author and category by ID
-        Author author = authorService.findAuthorById(authorId);
-        Category category = categoryService.findCategoryById(categoryId);
-        
-        // Set author and category in the book
-        book.setAuthor(author);
-        book.setCategory(category);
+    public String updateBook(@PathVariable UUID id, 
+                            @Valid @ModelAttribute("book") BookDTO book,
+                            // @RequestParam("authorId") UUID authorId,
+                            // @RequestParam("categoryId") UUID categoryId,
+                            @RequestParam(value = "image", required = false) MultipartFile imageFile,
+                            BindingResult result,
+                            RedirectAttributes redirectAttributes,
+                            Model model) throws IOException {
 
-        // Update the book and handle image upload
-        Book updatedBook = bookService.updateBook(id, book);
-        if (!imageFile.isEmpty()) {
-            bookService.uploadBookImage(updatedBook.getId(), imageFile); // Upload new image if provided
+        if (result.hasErrors()) {
+            model.addAttribute("pageTitle", "Edit Book - Company Name");
+            this.populateAuthorsAndCategories(model);
+            return "book/edit";
         }
 
-        return "redirect:/books/list"; // Redirect to book listing after updating
+        try {
+            // Update author logic
+            bookService.updateBook(id, book, (imageFile == null || imageFile.isEmpty()) ? null : imageFile);
+            redirectAttributes.addFlashAttribute("successMessage", "Book updated successfully!");
+            return "redirect:/books/list";
+        } catch (Exception e) {
+            model.addAttribute("book", book);
+            model.addAttribute("errorMessage", "Error updating book: " + e.getMessage());
+            this.populateAuthorsAndCategories(model);
+            return "book/edit/"; // Stay on the same page to show the error.
+        }
     }
 
     // Delete a book by ID
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/delete/{id}")
-    public String deleteBook(@PathVariable UUID id) {
-        bookService.deleteBook(id);
-        return "redirect:/books/list"; // Redirect to book listing after deletion
+    public String deleteBook(@PathVariable UUID id, @RequestParam(defaultValue = "1") int page, RedirectAttributes redirectAttributes) {
+        try {
+            bookService.deleteBook(id);
+            redirectAttributes.addFlashAttribute("successMessage", "Book deleted successfully!");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Failed to delete book: " + e.getMessage());
+        }
+        
+        if (page > 1) {
+            return "redirect:/books/list?page=" + page;
+        }
+        return "redirect:/books/list";
+    }
+
+    private void populateAuthorsAndCategories(Model model) {
+        model.addAttribute("authors", authorService.getAllAuthors());
+        model.addAttribute("categories", categoryService.getAllCategories());
     }
 }

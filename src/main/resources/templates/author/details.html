@@ -8,7 +8,7 @@
     <div layout:fragment="content">
         <div class="container mx-auto">
             <h2 th:text="${author.name}" class="text-2xl font-bold mb-4"></h2>
-            <img th:src="@{/images/authors/{image}(image=${author.image})}" alt="Author Image" class="mb-4">
+            <img th:src="${author.imageUrl != null ? author.imageUrl : (author.gender == 'male' ? '/uploads/default/male_default.jpg' : '/uploads/default/female_default.png')}" alt="Author Image" class="mb-4 w-32 h-32 object-cover mx-auto rounded-md">
             <p th:text="${author.biography}" class="mb-2"></p>
             <p><strong>Email:</strong> <span th:text="${author.email}"></span></p>
 

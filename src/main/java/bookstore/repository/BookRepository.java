@@ -19,4 +19,5 @@ public interface BookRepository extends JpaRepository<Book, UUID> {
 
     // Find books by ISBN
     Book findByIsbn(String isbn);
+    boolean existsByTitle(String title);
 }

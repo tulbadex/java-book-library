@@ -14,15 +14,16 @@ public class BookDTO {
     @NotBlank(message = "ISBN is required")
     private String isbn;
 
-    // @NotNull(message = "Author ID is required")
+    @NotNull(message = "Author is required")
     private UUID authorId;
 
-    @NotNull(message = "Category ID is required")
+    @NotNull(message = "Category is required")
     private UUID categoryId;
 
-    private MultipartFile image; // MultipartFile for image upload
+    private MultipartFile imageUrl; // MultipartFile for image upload
+    // private String imageUrl;
 
-    @NotNull(message = "Description is required")
+    @NotBlank(message = "Description is required")
     private String description;
 
     // Getters and Setters
@@ -58,12 +59,19 @@ public class BookDTO {
         this.categoryId = categoryId;
     }
 
-    public MultipartFile getImage() {
-        return image;
+    /* public String getImage() {
+        return imageUrl;
     }
 
-    public void setImage(MultipartFile image) {
-        this.image = image;
+    public void setImage(String imageUrl) {
+        this.imageUrl = imageUrl;
+    } */
+    public MultipartFile getImage() {
+        return imageUrl;
+    }
+
+    public void setImage(MultipartFile imageUrl) {
+        this.imageUrl = imageUrl;
     }
 
     public String getDescription() {
