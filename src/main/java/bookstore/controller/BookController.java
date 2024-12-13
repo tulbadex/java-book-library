@@ -3,8 +3,6 @@ package bookstore.controller;
 
 import bookstore.models.Book;
 import bookstore.dto.BookDTO;
-import bookstore.models.Author;
-import bookstore.models.Category;
 import bookstore.service.BookService;
 import bookstore.service.AuthorService;
 import bookstore.service.CategoryService;
@@ -21,7 +19,6 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.io.IOException;
-import java.util.Map;
 import java.util.UUID;
 
 @Controller
